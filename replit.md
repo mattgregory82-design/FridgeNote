@@ -1,8 +1,8 @@
-# ShopScan - Smart Shopping List Scanner
+# FridgeNote - Smart Shopping List Scanner
 
 ## Overview
 
-ShopScan is a React-based web application that enables users to scan shopping lists using OCR (Optical Character Recognition) technology, organize items by store categories, compare prices across UK supermarket chains, and locate nearby stores. The application features a modern, responsive design using shadcn/ui components and provides a complete shopping assistant experience.
+FridgeNote is a React-based web application that enables users to scan shopping lists using OCR (Optical Character Recognition) technology, organize items by store categories, compare prices across UK supermarket chains, and locate nearby stores. The application features a modern, responsive design using shadcn/ui components and provides a complete shopping assistant experience.
 
 ## User Preferences
 
@@ -115,3 +115,7 @@ The application is designed to be mobile-first with progressive enhancement, sup
 ✓ Created DatabaseStorage class to replace in-memory storage
 ✓ Implemented database seeding with UK stores and product price data
 ✓ Successfully migrated from MemStorage to persistent database storage
+✓ Added comprehensive "Order Online" tab with delivery and collection options for UK supermarkets
+✓ Fixed React hooks errors to ensure proper app functionality
+✓ Changed app name from ShopScan to FridgeNote as requested
+✓ Fixed infinite loop issue in OrganisedView component

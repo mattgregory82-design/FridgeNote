@@ -22,7 +22,7 @@ export default function OrganisedView({ items, onItemsUpdated }: OrganisedViewPr
       setOrganisedItems(categorised);
       onItemsUpdated(categorised);
     }
-  }, [items, onItemsUpdated]);
+  }, [items]); // Remove onItemsUpdated from dependencies to fix infinite loop
 
   const moveItem = (itemId: string, newCategory: string) => {
     const updatedItems = organisedItems.map(item =>
