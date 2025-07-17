@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, Camera, List, PoundSterling, MapPin, Plus } from "lucide-react";
+import { CheckCircle, Camera, List, PoundSterling, MapPin, Plus, ShoppingCart } from "lucide-react";
 import CameraCapture from "@/components/camera-capture";
 import OCRResults from "@/components/ocr-results";
 import OrganisedView from "@/components/organised-view";
 import PriceComparison from "@/components/price-comparison";
 import StoreLocator from "@/components/store-locator";
+import OrderOnline from "@/components/order-online";
 import LanguageSelector from "@/components/language-selector";
 import { useLocalStorage } from "@/lib/storage";
 import type { ShoppingItem } from "@shared/schema";
@@ -90,6 +91,13 @@ export default function Home() {
                 <MapPin className="w-4 h-4 mr-2" />
                 Find Stores
               </TabsTrigger>
+              <TabsTrigger 
+                value="order"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent py-4 px-1 text-sm font-medium whitespace-nowrap"
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Order Online
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -122,6 +130,10 @@ export default function Home() {
 
           <TabsContent value="stores" className="space-y-6">
             <StoreLocator />
+          </TabsContent>
+
+          <TabsContent value="order" className="space-y-6">
+            <OrderOnline items={currentList} />
           </TabsContent>
         </Tabs>
       </main>

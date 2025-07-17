@@ -1,4 +1,6 @@
 import { shoppingLists, stores, products, type ShoppingList, type InsertShoppingList, type Store, type InsertStore, type Product, type InsertProduct } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Shopping Lists
@@ -263,4 +265,112 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getShoppingList(id: number): Promise<ShoppingList | undefined> {
+    const [list] = await db.select().from(shoppingLists).where(eq(shoppingLists.id, id));
+    return list || undefined;
+  }
+
+  async getAllShoppingLists(): Promise<ShoppingList[]> {
+    return await db.select().from(shoppingLists).orderBy(desc(shoppingLists.createdAt));
+  }
+
+  async createShoppingList(insertList: InsertShoppingList): Promise<ShoppingList> {
+    const [list] = await db
+      .insert(shoppingLists)
+      .values(insertList)
+      .returning();
+    return list;
+  }
+
+  async updateShoppingList(id: number, updates: Partial<InsertShoppingList>): Promise<ShoppingList | undefined> {
+    const [list] = await db
+      .update(shoppingLists)
+      .set(updates)
+      .where(eq(shoppingLists.id, id))
+      .returning();
+    return list || undefined;
+  }
+
+  async deleteShoppingList(id: number): Promise<boolean> {
+    const result = await db
+      .delete(shoppingLists)
+      .where(eq(shoppingLists.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Stores
+  async getAllStores(): Promise<Store[]> {
+    return await db.select().from(stores);
+  }
+
+  async getStoresByLocation(latitude: number, longitude: number, radiusKm: number): Promise<Store[]> {
+    // For now, return all stores and filter in JavaScript
+    // In production, you'd use PostGIS for spatial queries
+    const allStores = await db.select().from(stores);
+    
+    return allStores.filter(store => {
+      const distance = this.calculateDistance(latitude, longitude, store.latitude, store.longitude);
+      return distance <= radiusKm;
+    }).sort((a, b) => {
+      const distA = this.calculateDistance(latitude, longitude, a.latitude, a.longitude);
+      const distB = this.calculateDistance(latitude, longitude, b.latitude, b.longitude);
+      return distA - distB;
+    });
+  }
+
+  async createStore(insertStore: InsertStore): Promise<Store> {
+    const [store] = await db
+      .insert(stores)
+      .values(insertStore)
+      .returning();
+    return store;
+  }
+
+  // Products
+  async getAllProducts(): Promise<Product[]> {
+    return await db.select().from(products);
+  }
+
+  async getProductByName(name: string): Promise<Product | undefined> {
+    const [product] = await db
+      .select()
+      .from(products)
+      .where(sql`lower(${products.name}) LIKE lower(${`%${name}%`})`);
+    return product || undefined;
+  }
+
+  async searchProducts(query: string): Promise<Product[]> {
+    return await db
+      .select()
+      .from(products)
+      .where(sql`lower(${products.name}) LIKE lower(${`%${query}%`})`);
+  }
+
+  async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    const [product] = await db
+      .insert(products)
+      .values(insertProduct)
+      .returning();
+    return product;
+  }
+
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth's radius in km
+    const dLat = this.deg2rad(lat2 - lat1);
+    const dLon = this.deg2rad(lon2 - lon1);
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  private deg2rad(deg: number): number {
+    return deg * (Math.PI/180);
+  }
+}
+
+// Keep MemStorage for fallback but use DatabaseStorage by default
+export const storage = new DatabaseStorage();
