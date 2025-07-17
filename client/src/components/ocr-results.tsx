@@ -9,10 +9,10 @@ import type { ShoppingItem } from "@shared/schema";
 interface OCRResultsProps {
   items: ShoppingItem[];
   onItemsUpdated: (items: ShoppingItem[]) => void;
-  onOrganize: () => void;
+  onOrganise: () => void;
 }
 
-export default function OCRResults({ items, onItemsUpdated, onOrganize }: OCRResultsProps) {
+export default function OCRResults({ items, onItemsUpdated, onOrganise }: OCRResultsProps) {
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
 
@@ -119,12 +119,12 @@ export default function OCRResults({ items, onItemsUpdated, onOrganize }: OCRRes
         
         <div className="mt-6 flex space-x-3">
           <Button 
-            onClick={onOrganize}
+            onClick={onOrganise}
             className="flex-1"
             disabled={items.length === 0}
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            Organize Items
+            Organise Items
           </Button>
           
           <Button 

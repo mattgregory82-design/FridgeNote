@@ -48,6 +48,8 @@ export const shoppingItemSchema = z.object({
 export const insertShoppingListSchema = createInsertSchema(shoppingLists).omit({
   id: true,
   createdAt: true,
+}).extend({
+  items: z.array(shoppingItemSchema).optional().default([])
 });
 
 export const insertStoreSchema = createInsertSchema(stores).omit({

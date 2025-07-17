@@ -7,42 +7,42 @@ import { categorizeItems, STORE_CATEGORIES } from "@/lib/shopping-data";
 import { useLocalStorage } from "@/lib/storage";
 import type { ShoppingItem } from "@shared/schema";
 
-interface OrganizedViewProps {
+interface OrganisedViewProps {
   items: ShoppingItem[];
   onItemsUpdated: (items: ShoppingItem[]) => void;
 }
 
-export default function OrganizedView({ items, onItemsUpdated }: OrganizedViewProps) {
-  const [organizedItems, setOrganizedItems] = useState<ShoppingItem[]>([]);
+export default function OrganisedView({ items, onItemsUpdated }: OrganisedViewProps) {
+  const [organisedItems, setOrganisedItems] = useState<ShoppingItem[]>([]);
   const [, setSavedLists] = useLocalStorage<Array<{id: string, name: string, date: string, itemCount: number}>>("recent_lists", []);
 
   useEffect(() => {
     if (items.length > 0) {
-      const categorized = categorizeItems(items);
-      setOrganizedItems(categorized);
-      onItemsUpdated(categorized);
+      const categorised = categorizeItems(items);
+      setOrganisedItems(categorised);
+      onItemsUpdated(categorised);
     }
   }, [items, onItemsUpdated]);
 
   const moveItem = (itemId: string, newCategory: string) => {
-    const updatedItems = organizedItems.map(item =>
+    const updatedItems = organisedItems.map(item =>
       item.id === itemId ? { ...item, category: newCategory } : item
     );
-    setOrganizedItems(updatedItems);
+    setOrganisedItems(updatedItems);
     onItemsUpdated(updatedItems);
   };
 
   const toggleItemComplete = (itemId: string) => {
-    const updatedItems = organizedItems.map(item =>
+    const updatedItems = organisedItems.map(item =>
       item.id === itemId ? { ...item, completed: !item.completed } : item
     );
-    setOrganizedItems(updatedItems);
+    setOrganisedItems(updatedItems);
     onItemsUpdated(updatedItems);
   };
 
   const exportList = () => {
     const listText = STORE_CATEGORIES.map(category => {
-      const categoryItems = organizedItems.filter(item => item.category === category.name);
+      const categoryItems = organisedItems.filter(item => item.category === category.name);
       if (categoryItems.length === 0) return null;
       
       return `${category.name} (${category.aisle}):\n${categoryItems.map(item => `  • ${item.text}`).join('\n')}`;
@@ -63,23 +63,23 @@ export default function OrganizedView({ items, onItemsUpdated }: OrganizedViewPr
       id: Date.now().toString(),
       name: listName,
       date: new Date().toLocaleDateString(),
-      itemCount: organizedItems.length
+      itemCount: organisedItems.length
     };
     
     setSavedLists(prev => [newList, ...prev.slice(0, 9)]); // Keep last 10 lists
   };
 
   const getCategoryItems = (categoryName: string) => {
-    return organizedItems.filter(item => item.category === categoryName);
+    return organisedItems.filter(item => item.category === categoryName);
   };
 
-  if (organizedItems.length === 0) {
+  if (organisedItems.length === 0) {
     return (
       <Card>
         <CardContent className="p-6 text-center">
           <Route className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Items to Organize</h3>
-          <p className="text-gray-600">Capture some items first to see them organized by store layout.</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Items to Organise</h3>
+          <p className="text-gray-600">Capture some items first to see them organised by store layout.</p>
         </CardContent>
       </Card>
     );
@@ -89,10 +89,10 @@ export default function OrganizedView({ items, onItemsUpdated }: OrganizedViewPr
     <Card>
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">Organized by Store Layout</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Organised by Store Layout</h2>
           <Button variant="outline" size="sm">
             <Route className="w-4 h-4 mr-2" />
-            Optimize Route
+            Optimise Route
           </Button>
         </div>
         

@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, Camera, List, DollarSign, MapPin, Plus } from "lucide-react";
+import { CheckCircle, Camera, List, PoundSterling, MapPin, Plus } from "lucide-react";
 import CameraCapture from "@/components/camera-capture";
 import OCRResults from "@/components/ocr-results";
-import OrganizedView from "@/components/organized-view";
+import OrganisedView from "@/components/organised-view";
 import PriceComparison from "@/components/price-comparison";
 import StoreLocator from "@/components/store-locator";
 import LanguageSelector from "@/components/language-selector";
@@ -15,7 +15,7 @@ import type { ShoppingItem } from "@shared/schema";
 export default function Home() {
   const [activeTab, setActiveTab] = useState("capture");
   const [capturedItems, setCapturedItems] = useState<ShoppingItem[]>([]);
-  const [organizedItems, setOrganizedItems] = useState<ShoppingItem[]>([]);
+  const [organisedItems, setOrganisedItems] = useState<ShoppingItem[]>([]);
   const [currentList, setCurrentList] = useLocalStorage<ShoppingItem[]>("current_list", []);
 
   const handleItemsDetected = (items: ShoppingItem[]) => {
@@ -23,8 +23,8 @@ export default function Home() {
     setCurrentList(items);
   };
 
-  const handleItemsOrganized = (items: ShoppingItem[]) => {
-    setOrganizedItems(items);
+  const handleItemsOrganised = (items: ShoppingItem[]) => {
+    setOrganisedItems(items);
     setCurrentList(items);
   };
 
@@ -74,13 +74,13 @@ export default function Home() {
                 className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent py-4 px-1 text-sm font-medium whitespace-nowrap"
               >
                 <List className="w-4 h-4 mr-2" />
-                Organized View
+                Organised View
               </TabsTrigger>
               <TabsTrigger 
                 value="compare"
                 className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent py-4 px-1 text-sm font-medium whitespace-nowrap"
               >
-                <DollarSign className="w-4 h-4 mr-2" />
+                <PoundSterling className="w-4 h-4 mr-2" />
                 Price Compare
               </TabsTrigger>
               <TabsTrigger 
@@ -104,15 +104,15 @@ export default function Home() {
               <OCRResults 
                 items={capturedItems} 
                 onItemsUpdated={setCapturedItems}
-                onOrganize={() => setActiveTab("organized")}
+                onOrganise={() => setActiveTab("organized")}
               />
             )}
           </TabsContent>
 
           <TabsContent value="organized" className="space-y-6">
-            <OrganizedView 
+            <OrganisedView 
               items={currentList} 
-              onItemsUpdated={handleItemsOrganized}
+              onItemsUpdated={handleItemsOrganised}
             />
           </TabsContent>
 

@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { RefreshCw, TrendingDown } from "lucide-react";
+import { RefreshCw, PoundSterling } from "lucide-react";
 import type { ShoppingItem, Product } from "@shared/schema";
 
 interface PriceComparisonProps {
@@ -78,7 +78,7 @@ export default function PriceComparison({ items }: PriceComparisonProps) {
     return (
       <Card>
         <CardContent className="p-6 text-center">
-          <TrendingDown className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <PoundSterling className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Items to Compare</h3>
           <p className="text-gray-600">Add some items to your list to see price comparisons.</p>
         </CardContent>
@@ -195,7 +195,7 @@ export default function PriceComparison({ items }: PriceComparisonProps) {
             
             <div className="mt-6 flex space-x-3">
               <Button className="flex-1">
-                <TrendingDown className="w-4 h-4 mr-2" />
+                <PoundSterling className="w-4 h-4 mr-2" />
                 Select Best Deals
               </Button>
               <Button variant="outline" onClick={() => refetch()}>

@@ -119,7 +119,7 @@ export default function StoreLocator() {
             <div className="flex items-center text-green-700">
               <MapPin className="w-4 h-4 mr-2" />
               <span className="text-sm">
-                Location found • Showing stores within {searchRadius}km
+                Location found • Showing stores within {Math.round(searchRadius * 0.621371)} miles
               </span>
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function StoreLocator() {
                       {location && (
                         <div className="text-right">
                           <div className="text-sm font-medium text-primary">
-                            {distance.toFixed(1)} miles
+                            {(distance * 0.621371).toFixed(1)} miles
                           </div>
                           <div className="text-xs text-gray-500">
                             {walkingTime} min walk

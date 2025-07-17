@@ -163,9 +163,10 @@ export class MemStorage implements IStorage {
   async createShoppingList(insertList: InsertShoppingList): Promise<ShoppingList> {
     const id = this.currentListId++;
     const list: ShoppingList = { 
-      ...insertList, 
       id, 
-      createdAt: new Date() 
+      name: insertList.name,
+      items: insertList.items || [],
+      createdAt: new Date()
     };
     this.shoppingLists.set(id, list);
     return list;
@@ -204,7 +205,11 @@ export class MemStorage implements IStorage {
 
   async createStore(insertStore: InsertStore): Promise<Store> {
     const id = this.currentStoreId++;
-    const store: Store = { ...insertStore, id };
+    const store: Store = { 
+      ...insertStore, 
+      id,
+      phone: insertStore.phone || null
+    };
     this.stores.set(id, store);
     return store;
   }
@@ -229,7 +234,14 @@ export class MemStorage implements IStorage {
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
     const id = this.currentProductId++;
-    const product: Product = { ...insertProduct, id };
+    const product: Product = { 
+      ...insertProduct, 
+      id,
+      tescoPrice: insertProduct.tescoPrice || null,
+      sainsburysPrice: insertProduct.sainsburysPrice || null,
+      asdaPrice: insertProduct.asdaPrice || null,
+      morrisisonsPrice: insertProduct.morrisisonsPrice || null
+    };
     this.products.set(id, product);
     return product;
   }

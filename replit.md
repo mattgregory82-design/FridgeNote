@@ -7,6 +7,7 @@ ShopScan is a React-based web application that enables users to scan shopping li
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+UK formatting: Uses British spelling (organised not organized), £ currency symbol, miles instead of kilometres.
 
 ## System Architecture
 
@@ -101,3 +102,12 @@ The application follows a full-stack TypeScript architecture with a clear separa
 - Replit-specific optimizations and development tools
 
 The application is designed to be mobile-first with progressive enhancement, supporting both online and offline capabilities through local storage persistence and client-side OCR processing.
+
+## Recent Changes (17 Jan 2025)
+
+✓ Updated all UI text to use British English spelling (organised, optimise)
+✓ Changed currency formatting to use £ (Pound Sterling) symbols
+✓ Updated distance measurements to display in miles instead of kilometres  
+✓ Replaced DollarSign icons with PoundSterling icons for price comparison
+✓ Fixed TypeScript compilation errors in storage layer
+✓ Renamed OrganizedView to OrganisedView component for consistency
