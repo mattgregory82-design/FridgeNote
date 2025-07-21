@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Edit2, RotateCcw, Sparkles } from "lucide-react";
+import { SafeText } from "@/components/safe-text";
 import type { ShoppingItem } from "@shared/schema";
 
 interface OCRResultsProps {
@@ -92,7 +93,7 @@ export default function OCRResults({ items, onItemsUpdated, onOrganise }: OCRRes
                 </div>
               ) : (
                 <>
-                  <span className="flex-1 text-gray-900">{item.text}</span>
+                  <SafeText className="flex-1 text-gray-900">{item.text}</SafeText>
                   <span className="text-xs text-gray-500">
                     {Math.round(item.confidence * 100)}%
                   </span>
