@@ -124,6 +124,14 @@ The application is designed to be mobile-first with progressive enhancement, sup
 ✓ Generated custom app icons (192x192 and 512x512 PNG)
 ✓ Added PWA meta tags for iOS and Android compatibility
 
+### iOS Safari Camera Fixes
+✓ Added iOS-safe video attributes: playsInline, muted, autoPlay
+✓ Programmatically set playsinline attribute for Safari compatibility
+✓ Relaxed facingMode constraint to { ideal: "environment" } with fallback
+✓ Explicit play() call after setting srcObject for iOS PWA
+✓ Made preview area clickable to start camera (improved UX)
+✓ Clear error message with upload fallback when camera fails
+
 ### Bug Fixes
 ✓ Fixed Express trust proxy configuration for Replit environment
 ✓ Fixed error handler that was causing crashes by rethrowing errors

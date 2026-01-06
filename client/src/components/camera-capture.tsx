@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Camera, Upload, Edit } from "lucide-react";
+import { Camera, Upload, Edit, AlertCircle } from "lucide-react";
 import { useOCR } from "@/hooks/use-ocr";
 import { useLocalStorage } from "@/lib/storage";
 import type { ShoppingItem } from "@shared/schema";
@@ -14,6 +14,7 @@ interface CameraCaptureProps {
 export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
   const [isCapturing, setIsCapturing] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const [recentLists] = useLocalStorage<Array<{id: string, name: string, date: string, itemCount: number}>>("recent_lists", []);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -31,18 +32,45 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
   }, []);
 
   const startCamera = async () => {
+    setCameraError(null);
+    
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "environment" }
-      });
+      let stream: MediaStream;
+      
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: true,
+          audio: false
+        });
+      }
+      
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        const video = videoRef.current;
+        video.setAttribute("playsinline", "true");
+        video.setAttribute("muted", "true");
+        video.srcObject = stream;
         streamRef.current = stream;
+        
+        try {
+          await video.play();
+        } catch (playError) {
+          console.warn("Video autoplay failed, user interaction may be needed:", playError);
+        }
+        
         setShowCamera(true);
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
-      fileInputRef.current?.click();
+      setCameraError("Could not access camera. Please use the upload option instead.");
     }
   };
 
@@ -51,7 +79,11 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
     setShowCamera(false);
+    setCameraError(null);
   };
 
   const captureImage = useCallback(async () => {
@@ -130,6 +162,7 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
                 ref={videoRef}
                 autoPlay
                 playsInline
+                muted
                 className="w-full h-full object-cover"
               />
               <div className="camera-overlay" />
@@ -144,14 +177,38 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
               </Button>
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
+            <button
+              type="button"
+              onClick={startCamera}
+              disabled={isProcessing}
+              className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer border-2 border-dashed border-gray-300 hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              data-testid="button-tap-to-start-camera"
+            >
               <div className="text-center">
                 <Camera className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600">Tap camera button to start</p>
+                <p className="text-sm text-gray-600 font-medium">Tap here to start camera</p>
+                <p className="text-xs text-gray-500 mt-1">or use buttons below</p>
               </div>
-            </div>
+            </button>
           )}
         </div>
+
+        {/* Camera Error Message */}
+        {cameraError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-red-700">{cameraError}</p>
+              <Button 
+                variant="link" 
+                className="h-auto p-0 text-red-700 underline text-sm"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Upload an image instead
+              </Button>
+            </div>
+          </div>
+        )}
         
         {/* Quick Actions */}
         <div className="flex space-x-3">

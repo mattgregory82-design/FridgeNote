@@ -1,0 +1,61 @@
+Fix iOS Safari/PWA camera issues in FridgeNote and improve the capture UX.
+
+CONTEXT
+- iPhone Safari/PWA: user taps Start Camera, grants permission, iOS shows red privacy indicator but the in-app camera preview does not appear and user cannot take a photo.
+- We are using getUserMedia and rendering a <video> preview in client/src/components/camera-capture.tsx.
+
+GOALS
+1) Make camera preview reliably show on iOS Safari and iOS “Add to Home Screen” (PWA).
+2) Improve UX: Make the “Tap camera button to start” text area and the main hero image/placeholder clickable to start the camera, not just the Start Camera button.
+3) Do not add new libraries. Keep TypeScript correct.
+
+FILE TO EDIT
+- client/src/components/camera-capture.tsx
+
+REQUIRED CAMERA FIXES (iOS SAFE)
+A) Ensure the <video> element uses iOS-safe attributes:
+   - playsInline
+   - muted
+   - autoPlay
+   (in JSX and/or programmatically)
+
+B) After setting videoRef.current.srcObject = stream:
+   - explicitly call await videoRef.current.play()
+   - set playsinline attribute programmatically as well:
+     video.setAttribute("playsinline", "true")
+
+C) Relax facingMode constraints (environment camera can fail on iOS):
+   - Use facingMode: { ideal: "environment" } not "environment"
+   - Include width/height ideals (optional)
+   - Implement fallback: if getUserMedia with constraints fails, retry with { video: true, audio: false }
+
+D) Ensure stream stops on unmount and when user stops camera:
+   - cleanup useEffect that stops all tracks
+   - stopCamera() stops tracks and clears srcObject
+
+E) If camera cannot start, show a clear error message and offer the file upload fallback.
+
+UX IMPROVEMENTS
+1) Add a prominent “Tap to start camera” clickable area:
+   - Make the hero/placeholder area a button or clickable container.
+   - Clicking it should call startCamera() (same function as Start Camera).
+   - Keep accessibility: use <button type="button"> or role="button" + keyboard support.
+
+2) Ensure the UI state changes clearly:
+   - Before camera start: show “Tap to start camera” and Start Camera button.
+   - After camera start: show live preview and a clear “Take photo” (capture) button.
+   - Do NOT show recording mode; we only take a still frame from the video.
+
+ACCEPTANCE TESTS (must pass)
+- On iPhone Safari:
+  - Tap the placeholder area -> permission prompt appears -> after Allow, a live camera preview appears.
+  - “Take photo” button captures and proceeds to OCR as before.
+- On iPhone after “Add to Home Screen”:
+  - Same behaviour: preview appears and capture works.
+- If camera fails:
+  - Show error + allow upload image as fallback.
+- Clicking the text/hero area starts camera.
+
+OUTPUT
+- Update camera-capture.tsx accordingly.
+- Summarize changes and mention the exact iOS-specific fixes you applied (playsInline, play(), constraint fallback).
