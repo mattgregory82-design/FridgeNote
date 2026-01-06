@@ -8,7 +8,11 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-export default function InstallPrompt() {
+interface InstallPromptProps {
+  showAfterListConfirmed?: boolean;
+}
+
+export default function InstallPrompt({ showAfterListConfirmed = false }: InstallPromptProps) {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -22,11 +26,6 @@ export default function InstallPrompt() {
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      
-      const dismissed = localStorage.getItem('pwa-install-dismissed');
-      if (!dismissed) {
-        setTimeout(() => setShowPrompt(true), 3000);
-      }
     };
 
     const handleAppInstalled = () => {
@@ -43,6 +42,18 @@ export default function InstallPrompt() {
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
+
+  useEffect(() => {
+    if (!deferredPrompt || isInstalled) return;
+    
+    const dismissed = localStorage.getItem('pwa-install-dismissed');
+    if (dismissed) return;
+
+    if (showAfterListConfirmed) {
+      const timer = setTimeout(() => setShowPrompt(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [deferredPrompt, isInstalled, showAfterListConfirmed]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;

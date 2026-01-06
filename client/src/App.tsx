@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
-import InstallPrompt from "@/components/install-prompt";
 
 function Router() {
   return (
@@ -22,7 +21,6 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
-        <InstallPrompt />
       </TooltipProvider>
     </QueryClientProvider>
   );

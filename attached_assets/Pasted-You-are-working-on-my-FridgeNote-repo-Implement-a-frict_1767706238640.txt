@@ -1,0 +1,70 @@
+You are working on my FridgeNote repo. Implement a frictionless first-time UX by converting the app into a guided 3-step flow while keeping tabs as secondary navigation.
+
+Repo structure:
+- client/src/pages/home.tsx
+- client/src/components/camera-capture.tsx
+- client/src/components/organised-view.tsx
+There are also components OCRResults, PriceComparison, StoreLocator, OrderOnline used by home.tsx.
+
+GOALS
+1) First-time experience should guide users through:
+   Step 1: Capture (camera/upload/manual)
+   Step 2: Review (OCR results with quick edits)
+   Step 3: Organised list (tick-off shopping mode)
+   Advanced features (Price Compare / Find Stores / Order Online) should not distract the first run.
+
+2) Keep the existing Tabs UI, but:
+   - Only show the 3 core tabs (Capture, Review, Organised) until a list exists.
+   - Disable Review and Organised tabs until items.length > 0.
+   - Show advanced tabs only after the user has at least one item AND they have reached/confirmed the Review step (use a boolean like hasReviewed or hasConfirmedResults).
+
+3) Auto-navigation:
+   - After CameraCapture produces items (onItemsDetected), route to the Review tab (NOT directly to Organised).
+   - Add a “Continue to Organised List” button on the Review tab that moves to Organised and sets hasConfirmedResults=true.
+   - If OCRResults component already has UI, integrate this button either in OCRResults or in home.tsx directly below it.
+
+4) Add an “Add item” bar in Organised View:
+   - At the top of Organised View, add an input + Add button.
+   - Press Enter adds the item too.
+   - New item should match ShoppingItem shape used elsewhere: { id, text, confidence, completed }.
+   - On add, update organisedItems state AND call onItemsUpdated(updatedItems) so Home persists to localStorage.
+   - Do NOT break existing categorization or tick-off functionality.
+
+5) Improve Manual Entry in camera-capture.tsx:
+   - Replace the current placeholder “Enter items manually” with a real manual entry flow.
+   - Use a quick implementation (window.prompt is OK for now):
+     - Prompt: “Type items separated by commas or new lines”
+     - Parse by newline or comma, trim, remove empties
+     - Create ShoppingItem[] with confidence=1 and completed=false
+     - Call onItemsDetected(manualItems) with parsed items
+
+6) Camera lifecycle fix:
+   - Ensure camera stream tracks stop on unmount of CameraCapture to prevent camera staying active.
+   - Add a cleanup useEffect that stops all tracks if streamRef.current exists.
+
+INSTALL PROMPT
+- If there is any install prompt shown early, ensure it only appears after the user has a successfully created list (items.length > 0) and ideally after confirmation. Do not block the core flow.
+
+GUARDRAILS
+- No breaking changes to existing APIs/types.
+- No new libraries.
+- Keep changes minimal and focused.
+- Keep localStorage behaviour for “current_list”.
+- Maintain TypeScript correctness.
+
+ACCEPTANCE CRITERIA (verify manually)
+- Opening app shows Capture as default.
+- User captures photo or uploads image: app moves to Review automatically.
+- Review shows extracted items; user can continue to Organised via button.
+- Organised view has “Add item” input and updates list.
+- Advanced tabs are hidden until at least one list exists AND user confirmed Review.
+- Manual entry lets user input multiple items and proceeds through same flow.
+- Navigating away from Capture stops camera stream.
+
+OUTPUT
+- Make the code changes directly in:
+  - client/src/pages/home.tsx
+  - client/src/components/camera-capture.tsx
+  - client/src/components/organised-view.tsx
+  - and OCRResults component file if needed to add the Continue button.
+- Then summarize exactly what you changed and where.

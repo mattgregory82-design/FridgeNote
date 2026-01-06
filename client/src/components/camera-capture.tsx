@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,15 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
   
   const { processImage, isProcessing } = useOCR();
 
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []);
+
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -33,7 +42,6 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
-      // Fallback to file upload
       fileInputRef.current?.click();
     }
   };
@@ -88,15 +96,24 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
   };
 
   const handleManualEntry = () => {
-    // For now, just create a sample manual entry
-    const manualItems: ShoppingItem[] = [
-      {
-        id: "manual-1",
-        text: "Enter items manually",
-        confidence: 1.0,
-        completed: false
-      }
-    ];
+    const input = window.prompt("Type your shopping items separated by commas or new lines:");
+    
+    if (!input || !input.trim()) return;
+
+    const itemTexts = input
+      .split(/[,\n]+/)
+      .map(text => text.trim())
+      .filter(text => text.length > 0);
+
+    if (itemTexts.length === 0) return;
+
+    const manualItems: ShoppingItem[] = itemTexts.map((text, index) => ({
+      id: `manual-${Date.now()}-${index}`,
+      text,
+      confidence: 1.0,
+      completed: false
+    }));
+
     onItemsDetected(manualItems);
   };
 
@@ -121,6 +138,7 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
                 disabled={isCapturing || isProcessing}
                 className="capture-button"
                 size="icon"
+                data-testid="button-capture-photo"
               >
                 <Camera className="w-8 h-8" />
               </Button>
@@ -142,6 +160,7 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
             variant="outline" 
             className="flex-1"
             disabled={isProcessing}
+            data-testid="button-toggle-camera"
           >
             <Camera className="w-4 h-4 mr-2" />
             {showCamera ? "Stop Camera" : "Start Camera"}
@@ -152,6 +171,7 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
             variant="outline" 
             className="flex-1"
             disabled={isProcessing}
+            data-testid="button-upload-image"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload Image
@@ -161,6 +181,7 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
             onClick={handleManualEntry}
             variant="outline" 
             className="flex-1"
+            data-testid="button-manual-entry"
           >
             <Edit className="w-4 h-4 mr-2" />
             Type List
@@ -193,6 +214,7 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
                 <div 
                   key={list.id}
                   className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer"
+                  data-testid={`recent-list-${list.id}`}
                 >
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">{list.name}</div>

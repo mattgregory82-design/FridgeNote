@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Route, Download, Save, GripVertical } from "lucide-react";
+import { Route, Download, Save, GripVertical, Plus } from "lucide-react";
 import { categorizeItems, STORE_CATEGORIES } from "@/lib/shopping-data";
 import { useLocalStorage } from "@/lib/storage";
 import type { ShoppingItem } from "@shared/schema";
@@ -14,27 +15,24 @@ interface OrganisedViewProps {
 
 export default function OrganisedView({ items, onItemsUpdated }: OrganisedViewProps) {
   const [organisedItems, setOrganisedItems] = useState<ShoppingItem[]>([]);
+  const [newItemText, setNewItemText] = useState("");
   const [, setSavedLists] = useLocalStorage<Array<{id: string, name: string, date: string, itemCount: number}>>("recent_lists", []);
   const lastInputFingerprintRef = useRef<string>("");
   const lastOutputFingerprintRef = useRef<string>("");
 
-  // Memoize items fingerprint to detect actual changes in input
   const inputFingerprint = useMemo(() => {
     return items.map(i => i.id + i.text).join('|');
   }, [items]);
 
-  // Memoize categorised items to avoid recalculating
   const categorisedItems = useMemo(() => {
     if (items.length === 0) return [];
     return categorizeItems(items);
   }, [items]);
 
-  // Fingerprint for output to detect when we need to notify parent
   const outputFingerprint = useMemo(() => {
     return categorisedItems.map(i => i.id + i.text + (i.category || '')).join('|');
   }, [categorisedItems]);
 
-  // Update local state when input changes
   useEffect(() => {
     if (inputFingerprint !== lastInputFingerprintRef.current) {
       lastInputFingerprintRef.current = inputFingerprint;
@@ -42,13 +40,36 @@ export default function OrganisedView({ items, onItemsUpdated }: OrganisedViewPr
     }
   }, [inputFingerprint, categorisedItems]);
 
-  // Notify parent only when output actually changes (not on every render)
   useEffect(() => {
     if (categorisedItems.length > 0 && outputFingerprint !== lastOutputFingerprintRef.current) {
       lastOutputFingerprintRef.current = outputFingerprint;
       onItemsUpdated(categorisedItems);
     }
   }, [outputFingerprint, categorisedItems, onItemsUpdated]);
+
+  const handleAddItem = () => {
+    const trimmedText = newItemText.trim();
+    if (!trimmedText) return;
+
+    const newItem: ShoppingItem = {
+      id: `manual-${Date.now()}`,
+      text: trimmedText,
+      confidence: 1.0,
+      completed: false
+    };
+
+    const categorised = categorizeItems([newItem]);
+    const updatedItems = [...organisedItems, ...categorised];
+    setOrganisedItems(updatedItems);
+    onItemsUpdated(updatedItems);
+    setNewItemText("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleAddItem();
+    }
+  };
 
   const moveItem = (itemId: string, newCategory: string) => {
     const updatedItems = organisedItems.map(item =>
@@ -92,7 +113,7 @@ export default function OrganisedView({ items, onItemsUpdated }: OrganisedViewPr
       itemCount: organisedItems.length
     };
     
-    setSavedLists(prev => [newList, ...prev.slice(0, 9)]); // Keep last 10 lists
+    setSavedLists(prev => [newList, ...prev.slice(0, 9)]);
   };
 
   const getCategoryItems = (categoryName: string) => {
@@ -102,10 +123,29 @@ export default function OrganisedView({ items, onItemsUpdated }: OrganisedViewPr
   if (organisedItems.length === 0) {
     return (
       <Card>
-        <CardContent className="p-6 text-center">
-          <Route className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Items to Organise</h3>
-          <p className="text-gray-600">Capture some items first to see them organised by store layout.</p>
+        <CardContent className="p-6">
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Items to Your List</h2>
+            <div className="flex space-x-2">
+              <Input
+                value={newItemText}
+                onChange={(e) => setNewItemText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type an item and press Enter..."
+                className="flex-1"
+                data-testid="input-add-item"
+              />
+              <Button onClick={handleAddItem} data-testid="button-add-item">
+                <Plus className="w-4 h-4 mr-2" />
+                Add
+              </Button>
+            </div>
+          </div>
+          <div className="text-center py-8">
+            <Route className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Items Yet</h3>
+            <p className="text-gray-600">Add items above or capture a shopping list to get started.</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -114,9 +154,26 @@ export default function OrganisedView({ items, onItemsUpdated }: OrganisedViewPr
   return (
     <Card>
       <CardContent className="p-6">
+        <div className="mb-6">
+          <div className="flex space-x-2">
+            <Input
+              value={newItemText}
+              onChange={(e) => setNewItemText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Add another item..."
+              className="flex-1"
+              data-testid="input-add-item"
+            />
+            <Button onClick={handleAddItem} data-testid="button-add-item">
+              <Plus className="w-4 h-4 mr-2" />
+              Add
+            </Button>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">Organised by Store Layout</h2>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" data-testid="button-optimise-route">
             <Route className="w-4 h-4 mr-2" />
             Optimise Route
           </Button>
@@ -147,12 +204,14 @@ export default function OrganisedView({ items, onItemsUpdated }: OrganisedViewPr
                     <div 
                       key={item.id}
                       className={`draggable-item flex items-center space-x-3 p-2 rounded-md transition-all ${category.bgColor} ${item.completed ? 'opacity-50' : ''}`}
+                      data-testid={`item-organised-${item.id}`}
                     >
                       <input
                         type="checkbox"
                         checked={item.completed}
                         onChange={() => toggleItemComplete(item.id)}
                         className="w-4 h-4 text-primary rounded focus:ring-primary"
+                        data-testid={`checkbox-${item.id}`}
                       />
                       <div className={`w-2 h-2 rounded-full ${category.dotColor}`} />
                       <span className={`flex-1 ${item.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
@@ -170,11 +229,11 @@ export default function OrganisedView({ items, onItemsUpdated }: OrganisedViewPr
         </div>
         
         <div className="mt-6 flex space-x-3">
-          <Button onClick={exportList} className="flex-1">
+          <Button onClick={exportList} className="flex-1" data-testid="button-export-list">
             <Download className="w-4 h-4 mr-2" />
             Export List
           </Button>
-          <Button onClick={saveList} variant="outline">
+          <Button onClick={saveList} variant="outline" data-testid="button-save-list">
             <Save className="w-4 h-4 mr-2" />
             Save List
           </Button>

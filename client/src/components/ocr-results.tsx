@@ -3,17 +3,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Edit2, RotateCcw, Sparkles } from "lucide-react";
+import { Edit2, RotateCcw, ArrowRight } from "lucide-react";
 import { SafeText } from "@/components/safe-text";
 import type { ShoppingItem } from "@shared/schema";
 
 interface OCRResultsProps {
   items: ShoppingItem[];
   onItemsUpdated: (items: ShoppingItem[]) => void;
-  onOrganise: () => void;
+  onContinue: () => void;
 }
 
-export default function OCRResults({ items, onItemsUpdated, onOrganise }: OCRResultsProps) {
+export default function OCRResults({ items, onItemsUpdated, onContinue }: OCRResultsProps) {
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
 
@@ -62,17 +62,22 @@ export default function OCRResults({ items, onItemsUpdated, onOrganise }: OCRRes
     <Card>
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Detected Items</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Review Your Items</h3>
           <Badge variant="secondary">
             {items.length} item{items.length !== 1 ? 's' : ''} found
           </Badge>
         </div>
+
+        <p className="text-sm text-gray-600 mb-4">
+          Check the items below and make any corrections before continuing.
+        </p>
         
         <div className="space-y-3">
           {items.map((item) => (
             <div 
               key={item.id}
               className={`flex items-center space-x-3 p-3 rounded-lg ${getConfidenceBg(item.confidence)}`}
+              data-testid={`item-review-${item.id}`}
             >
               <div className={`w-2 h-2 rounded-full ${getConfidenceColor(item.confidence)}`} />
               
@@ -87,9 +92,10 @@ export default function OCRResults({ items, onItemsUpdated, onOrganise }: OCRRes
                       if (e.key === "Enter") saveEdit();
                       if (e.key === "Escape") cancelEdit();
                     }}
+                    data-testid="input-edit-item"
                   />
-                  <Button size="sm" onClick={saveEdit}>Save</Button>
-                  <Button size="sm" variant="outline" onClick={cancelEdit}>Cancel</Button>
+                  <Button size="sm" onClick={saveEdit} data-testid="button-save-edit">Save</Button>
+                  <Button size="sm" variant="outline" onClick={cancelEdit} data-testid="button-cancel-edit">Cancel</Button>
                 </div>
               ) : (
                 <>
@@ -101,6 +107,7 @@ export default function OCRResults({ items, onItemsUpdated, onOrganise }: OCRRes
                     size="sm"
                     variant="ghost"
                     onClick={() => startEdit(item)}
+                    data-testid={`button-edit-${item.id}`}
                   >
                     <Edit2 className="w-4 h-4" />
                   </Button>
@@ -109,6 +116,7 @@ export default function OCRResults({ items, onItemsUpdated, onOrganise }: OCRRes
                     variant="ghost"
                     onClick={() => removeItem(item.id)}
                     className="text-red-500 hover:text-red-700"
+                    data-testid={`button-remove-${item.id}`}
                   >
                     ×
                   </Button>
@@ -120,20 +128,22 @@ export default function OCRResults({ items, onItemsUpdated, onOrganise }: OCRRes
         
         <div className="mt-6 flex space-x-3">
           <Button 
-            onClick={onOrganise}
+            onClick={onContinue}
             className="flex-1"
             disabled={items.length === 0}
+            data-testid="button-continue-to-organised"
           >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Organise Items
+            Continue to Organised List
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
           
           <Button 
             variant="outline"
             onClick={() => window.location.reload()}
+            data-testid="button-retake"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
-            Retake
+            Start Over
           </Button>
         </div>
       </CardContent>
