@@ -131,6 +131,9 @@ The application is designed to be mobile-first with progressive enhancement, sup
 ✓ Explicit play() call after setting srcObject for iOS PWA
 ✓ Made preview area clickable to start camera (improved UX)
 ✓ Clear error message with upload fallback when camera fails
+✓ Added 1200ms watchdog to detect non-playing video and switch to fallback
+✓ Added "Use iPhone Camera" fallback button with capture="environment" input
+✓ Fallback uses native iOS camera UI for reliable photo capture
 
 ### Bug Fixes
 ✓ Fixed Express trust proxy configuration for Replit environment

@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Camera, Upload, Edit, AlertCircle } from "lucide-react";
+import { Camera, Upload, Edit, AlertCircle, Smartphone } from "lucide-react";
 import { useOCR } from "@/hooks/use-ocr";
 import { useLocalStorage } from "@/lib/storage";
 import type { ShoppingItem } from "@shared/schema";
@@ -15,10 +15,12 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
   const [isCapturing, setIsCapturing] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [showFallback, setShowFallback] = useState(false);
   const [recentLists] = useLocalStorage<Array<{id: string, name: string, date: string, itemCount: number}>>("recent_lists", []);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   
   const { processImage, isProcessing } = useOCR();
 
@@ -31,8 +33,15 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
     };
   }, []);
 
+  const activateFallbackMode = (errorMessage: string) => {
+    stopCamera();
+    setCameraError(errorMessage);
+    setShowFallback(true);
+  };
+
   const startCamera = async () => {
     setCameraError(null);
+    setShowFallback(false);
     
     try {
       let stream: MediaStream;
@@ -63,14 +72,23 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
         try {
           await video.play();
         } catch (playError) {
-          console.warn("Video autoplay failed, user interaction may be needed:", playError);
+          console.warn("Video autoplay failed:", playError);
         }
         
         setShowCamera(true);
+        
+        setTimeout(() => {
+          if (videoRef.current) {
+            const v = videoRef.current;
+            if (v.readyState < 2 || v.videoWidth === 0) {
+              activateFallbackMode("Live camera preview isn't available on this device. Use camera capture instead.");
+            }
+          }
+        }, 1200);
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
-      setCameraError("Could not access camera. Please use the upload option instead.");
+      activateFallbackMode("Live camera preview isn't available on this device. Use camera capture instead.");
     }
   };
 
@@ -83,7 +101,6 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
       videoRef.current.srcObject = null;
     }
     setShowCamera(false);
-    setCameraError(null);
   };
 
   const captureImage = useCallback(async () => {
@@ -124,6 +141,28 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
       onItemsDetected(items);
     } catch (error) {
       console.error("Error processing uploaded image:", error);
+    }
+    
+    if (event.target) {
+      event.target.value = "";
+    }
+  };
+
+  const handleCameraCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const items = await processImage(file);
+      onItemsDetected(items);
+      setCameraError(null);
+      setShowFallback(false);
+    } catch (error) {
+      console.error("Error processing camera capture:", error);
+    }
+    
+    if (event.target) {
+      event.target.value = "";
     }
   };
 
@@ -193,20 +232,24 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
           )}
         </div>
 
-        {/* Camera Error Message */}
+        {/* Camera Error Message + Fallback */}
         {cameraError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm text-red-700">{cameraError}</p>
-              <Button 
-                variant="link" 
-                className="h-auto p-0 text-red-700 underline text-sm"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Upload an image instead
-              </Button>
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-start gap-2 mb-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-800">{cameraError}</p>
             </div>
+            {showFallback && (
+              <Button 
+                onClick={() => cameraInputRef.current?.click()}
+                className="w-full bg-primary hover:bg-primary/90"
+                disabled={isProcessing}
+                data-testid="button-use-iphone-camera"
+              >
+                <Smartphone className="w-4 h-4 mr-2" />
+                Use iPhone Camera
+              </Button>
+            )}
           </div>
         )}
         
@@ -245,11 +288,22 @@ export default function CameraCapture({ onItemsDetected }: CameraCaptureProps) {
           </Button>
         </div>
 
+        {/* Hidden file input for gallery upload */}
         <Input
           ref={fileInputRef}
           type="file"
           accept="image/*"
           onChange={handleFileUpload}
+          className="hidden"
+        />
+
+        {/* Hidden file input for iOS camera capture fallback */}
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleCameraCapture}
           className="hidden"
         />
 
