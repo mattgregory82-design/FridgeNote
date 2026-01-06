@@ -1,0 +1,40 @@
+{
+  "name": "FridgeNote - Smart Shopping List",
+  "short_name": "FridgeNote",
+  "description": "Scan shopping lists, compare prices, and find stores near you",
+  "theme_color": "#10b981",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["shopping", "utilities", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Scan List",
+      "short_name": "Scan",
+      "description": "Capture a new shopping list",
+      "url": "/?tab=capture"
+    },
+    {
+      "name": "Find Stores",
+      "short_name": "Stores",
+      "description": "Find nearby stores",
+      "url": "/?tab=stores"
+    }
+  ]
+}
