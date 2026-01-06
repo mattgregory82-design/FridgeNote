@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { createWorker } from "tesseract.js";
+import { createWorker, Word } from "tesseract.js";
 import type { ShoppingItem } from "@shared/schema";
 
 export function useOCR() {
@@ -9,10 +9,10 @@ export function useOCR() {
     setIsProcessing(true);
     
     try {
-      const worker = await createWorker();
-      
-      await worker.loadLanguage('eng');
-      await worker.initialize('eng');
+      // Tesseract.js v5+ API: createWorker with language in options
+      const worker = await createWorker('eng', 1, {
+        logger: (m) => console.log(m),
+      });
       
       const { data } = await worker.recognize(imageFile);
       
@@ -26,6 +26,9 @@ export function useOCR() {
           return trimmed.length > 2 && /[a-zA-Z]/.test(trimmed);
         });
 
+      // Get words from the result (Tesseract.js v5+ structure)
+      const words: Word[] = (data as { words?: Word[] }).words || [];
+
       const items: ShoppingItem[] = lines.map((line, index) => {
         // Clean up the text
         const cleanText = line.trim()
@@ -34,25 +37,27 @@ export function useOCR() {
 
         // Calculate confidence based on word data if available
         let confidence = 0.8; // Default confidence
-        if (data.words) {
-          const lineWords = data.words.filter(word => 
+        if (words.length > 0) {
+          const lineWords = words.filter((word: Word) => 
             line.toLowerCase().includes(word.text.toLowerCase())
           );
           if (lineWords.length > 0) {
-            confidence = lineWords.reduce((sum, word) => sum + word.confidence, 0) / lineWords.length / 100;
+            confidence = lineWords.reduce((sum: number, word: Word) => sum + word.confidence, 0) / lineWords.length / 100;
           }
         }
 
+        const matchedWord = words.find((word: Word) => line.includes(word.text));
+        
         return {
           id: `ocr-${Date.now()}-${index}`,
           text: cleanText,
           confidence: Math.max(0.5, Math.min(1.0, confidence)), // Clamp between 0.5 and 1.0
           completed: false,
-          position: data.words?.find(word => line.includes(word.text))?.bbox ? {
-            x: data.words.find(word => line.includes(word.text))!.bbox.x0,
-            y: data.words.find(word => line.includes(word.text))!.bbox.y0,
-            width: data.words.find(word => line.includes(word.text))!.bbox.x1 - data.words.find(word => line.includes(word.text))!.bbox.x0,
-            height: data.words.find(word => line.includes(word.text))!.bbox.y1 - data.words.find(word => line.includes(word.text))!.bbox.y0,
+          position: matchedWord?.bbox ? {
+            x: matchedWord.bbox.x0,
+            y: matchedWord.bbox.y0,
+            width: matchedWord.bbox.x1 - matchedWord.bbox.x0,
+            height: matchedWord.bbox.y1 - matchedWord.bbox.y0,
           } : undefined,
         };
       });

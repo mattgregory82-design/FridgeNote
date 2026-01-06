@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,14 +15,40 @@ interface OrganisedViewProps {
 export default function OrganisedView({ items, onItemsUpdated }: OrganisedViewProps) {
   const [organisedItems, setOrganisedItems] = useState<ShoppingItem[]>([]);
   const [, setSavedLists] = useLocalStorage<Array<{id: string, name: string, date: string, itemCount: number}>>("recent_lists", []);
+  const lastInputFingerprintRef = useRef<string>("");
+  const lastOutputFingerprintRef = useRef<string>("");
 
+  // Memoize items fingerprint to detect actual changes in input
+  const inputFingerprint = useMemo(() => {
+    return items.map(i => i.id + i.text).join('|');
+  }, [items]);
+
+  // Memoize categorised items to avoid recalculating
+  const categorisedItems = useMemo(() => {
+    if (items.length === 0) return [];
+    return categorizeItems(items);
+  }, [items]);
+
+  // Fingerprint for output to detect when we need to notify parent
+  const outputFingerprint = useMemo(() => {
+    return categorisedItems.map(i => i.id + i.text + (i.category || '')).join('|');
+  }, [categorisedItems]);
+
+  // Update local state when input changes
   useEffect(() => {
-    if (items.length > 0) {
-      const categorised = categorizeItems(items);
-      setOrganisedItems(categorised);
-      onItemsUpdated(categorised);
+    if (inputFingerprint !== lastInputFingerprintRef.current) {
+      lastInputFingerprintRef.current = inputFingerprint;
+      setOrganisedItems(categorisedItems);
     }
-  }, [items]); // Remove onItemsUpdated from dependencies to fix infinite loop
+  }, [inputFingerprint, categorisedItems]);
+
+  // Notify parent only when output actually changes (not on every render)
+  useEffect(() => {
+    if (categorisedItems.length > 0 && outputFingerprint !== lastOutputFingerprintRef.current) {
+      lastOutputFingerprintRef.current = outputFingerprint;
+      onItemsUpdated(categorisedItems);
+    }
+  }, [outputFingerprint, categorisedItems, onItemsUpdated]);
 
   const moveItem = (itemId: string, newCategory: string) => {
     const updatedItems = organisedItems.map(item =>
