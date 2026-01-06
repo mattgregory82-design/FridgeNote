@@ -1,0 +1,116 @@
+[1mdiff --git a/attached_assets/Pasted-You-are-working-on-my-FridgeNote-repo-Implement-a-frict_1767706175000.txt b/attached_assets/Pasted-You-are-working-on-my-FridgeNote-repo-Implement-a-frict_1767706175000.txt[m
+[1mnew file mode 100644[m
+[1mindex 0000000..d64d854[m
+[1m--- /dev/null[m
+[1m+++ b/attached_assets/Pasted-You-are-working-on-my-FridgeNote-repo-Implement-a-frict_1767706175000.txt[m
+[36m@@ -0,0 +1,70 @@[m
+[32m+[m[32mYou are working on my FridgeNote repo. Implement a frictionless first-time UX by converting the app into a guided 3-step flow while keeping tabs as secondary navigation.[m
+[32m+[m
+[32m+[m[32mRepo structure:[m
+[32m+[m[32m- client/src/pages/home.tsx[m
+[32m+[m[32m- client/src/components/camera-capture.tsx[m
+[32m+[m[32m- client/src/components/organised-view.tsx[m
+[32m+[m[32mThere are also components OCRResults, PriceComparison, StoreLocator, OrderOnline used by home.tsx.[m
+[32m+[m
+[32m+[m[32mGOALS[m
+[32m+[m[32m1) First-time experience should guide users through:[m
+[32m+[m[32m   Step 1: Capture (camera/upload/manual)[m
+[32m+[m[32m   Step 2: Review (OCR results with quick edits)[m
+[32m+[m[32m   Step 3: Organised list (tick-off shopping mode)[m
+[32m+[m[32m   Advanced features (Price Compare / Find Stores / Order Online) should not distract the first run.[m
+[32m+[m
+[32m+[m[32m2) Keep the existing Tabs UI, but:[m
+[32m+[m[32m   - Only show the 3 core tabs (Capture, Review, Organised) until a list exists.[m
+[32m+[m[32m   - Disable Review and Organised tabs until items.length > 0.[m
+[32m+[m[32m   - Show advanced tabs only after the user has at least one item AND they have reached/confirmed the Review step (use a boolean like hasReviewed or hasConfirmedResults).[m
+[32m+[m
+[32m+[m[32m3) Auto-navigation:[m
+[32m+[m[32m   - After CameraCapture produces items (onItemsDetected), route to the Review tab (NOT directly to Organised).[m
+[32m+[m[32m   - Add a “Continue to Organised List” button on the Review tab that moves to Organised and sets hasConfirmedResults=true.[m
+[32m+[m[32m   - If OCRResults component already has UI, integrate this button either in OCRResults or in home.tsx directly below it.[m
+[32m+[m
+[32m+[m[32m4) Add an “Add item” bar in Organised View:[m
+[32m+[m[32m   - At the top of Organised View, add an input + Add button.[m
+[32m+[m[32m   - Press Enter adds the item too.[m
+[32m+[m[32m   - New item should match ShoppingItem shape used elsewhere: { id, text, confidence, completed }.[m
+[32m+[m[32m   - On add, update organisedItems state AND call onItemsUpdated(updatedItems) so Home persists to localStorage.[m
+[32m+[m[32m   - Do NOT break existing categorization or tick-off functionality.[m
+[32m+[m
+[32m+[m[32m5) Improve Manual Entry in camera-capture.tsx:[m
+[32m+[m[32m   - Replace the current placeholder “Enter items manually” with a real manual entry flow.[m
+[32m+[m[32m   - Use a quick implementation (window.prompt is OK for now):[m
+[32m+[m[32m     - Prompt: “Type items separated by commas or new lines”[m
+[32m+[m[32m     - Parse by newline or comma, trim, remove empties[m
+[32m+[m[32m     - Create ShoppingItem[] with confidence=1 and completed=false[m
+[32m+[m[32m     - Call onItemsDetected(manualItems) with parsed items[m
+[32m+[m
+[32m+[m[32m6) Camera lifecycle fix:[m
+[32m+[m[32m   - Ensure camera stream tracks stop on unmount of CameraCapture to prevent camera staying active.[m
+[32m+[m[32m   - Add a cleanup useEffect that stops all tracks if streamRef.current exists.[m
+[32m+[m
+[32m+[m[32mINSTALL PROMPT[m
+[32m+[m[32m- If there is any install prompt shown early, ensure it only appears after the user has a successfully created list (items.length > 0) and ideally after confirmation. Do not block the core flow.[m
+[32m+[m
+[32m+[m[32mGUARDRAILS[m
+[32m+[m[32m- No breaking changes to existing APIs/types.[m
+[32m+[m[32m- No new libraries.[m
+[32m+[m[32m- Keep changes minimal and focused.[m
+[32m+[m[32m- Keep localStorage behaviour for “current_list”.[m
+[32m+[m[32m- Maintain TypeScript correctness.[m
+[32m+[m
+[32m+[m[32mACCEPTANCE CRITERIA (verify manually)[m
+[32m+[m[32m- Opening app shows Capture as default.[m
+[32m+[m[32m- User captures photo or uploads image: app moves to Review automatically.[m
+[32m+[m[32m- Review shows extracted items; user can continue to Organised via button.[m
+[32m+[m[32m- Organised view has “Add item” input and updates list.[m
+[32m+[m[32m- Advanced tabs are hidden until at least one list exists AND user confirmed Review.[m
+[32m+[m[32m- Manual entry lets user input multiple items and proceeds through same flow.[m
+[32m+[m[32m- Navigating away from Capture stops camera stream.[m
+[32m+[m
+[32m+[m[32mOUTPUT[m
+[32m+[m[32m- Make the code changes directly in:[m
+[32m+[m[32m  - client/src/pages/home.tsx[m
+[32m+[m[32m  - client/src/components/camera-capture.tsx[m
+[32m+[m[32m  - client/src/components/organised-view.tsx[m
+[32m+[m[32m  - and OCRResults component file if needed to add the Continue button.[m
+[32m+[m[32m- Then summarize exactly what you changed and where.[m
+[1mdiff --git a/attached_assets/Pasted-You-are-working-on-my-FridgeNote-repo-Implement-a-frict_1767706185622.txt b/attached_assets/Pasted-You-are-working-on-my-FridgeNote-repo-Implement-a-frict_1767706185622.txt[m
+[1mnew file mode 100644[m
+[1mindex 0000000..d64d854[m
+[1m--- /dev/null[m
+[1m+++ b/attached_assets/Pasted-You-are-working-on-my-FridgeNote-repo-Implement-a-frict_1767706185622.txt[m
+[36m@@ -0,0 +1,70 @@[m
+[32m+[m[32mYou are working on my FridgeNote repo. Implement a frictionless first-time UX by converting the app into a guided 3-step flow while keeping tabs as secondary navigation.[m
+[32m+[m
+[32m+[m[32mRepo structure:[m
+[32m+[m[32m- client/src/pages/home.tsx[m
+[32m+[m[32m- client/src/components/camera-capture.tsx[m
+[32m+[m[32m- client/src/components/organised-view.tsx[m
+[32m+[m[32mThere are also components OCRResults, PriceComparison, StoreLocator, OrderOnline used by home.tsx.[m
+[32m+[m
+[32m+[m[32mGOALS[m
+[32m+[m[32m1) First-time experience should guide users through:[m
+[32m+[m[32m   Step 1: Capture (camera/upload/manual)[m
+[32m+[m[32m   Step 2: Review (OCR results with quick edits)[m
+[32m+[m[32m   Step 3: Organised list (tick-off shopping mode)[m
+[32m+[m[32m   Advanced features (Price Compare / Find Stores / Order Online) should not distract the first run.[m
+[32m+[m
+[32m+[m[32m2) Keep the existing Tabs UI, but:[m
+[32m+[m[32m   - Only show the 3 core tabs (Capture, Review, Organised) until a list exists.[m
+[32m+[m[32m   - Disable Review and Organised tabs until items.length > 0.[m
+[32m+[m[32m   - Show advanced tabs only after the user has at least one item AND they have reached/confirmed the Review step (use a boolean like hasReviewed or hasConfirmedResults).[m
+[32m+[m
+[32m+[m[32m3) Auto-navigation:[m
+[32m+[m[32m   - After CameraCapture produces items (onItemsDetected), route to the Review tab (NOT directly to Organised).[m
+[32m+[m[32m   - Add a “Continue to Organised List” button on the Review tab that moves to Organised and sets hasConfirmedResults=true.[m
+[32m+[m[32m   - If OCRResults component already has UI, integrate this button either in OCRResults or in home.tsx directly below it.[m
+[32m+[m
+[32m+[m[32m4) Add an “Add item” bar in Organised View:[m
+[32m+[m[32m   - At the top of Organised View, add an input + Add button.[m
+[32m+[m[32m   - Press Enter adds the item too.[m
+[32m+[m[32m   - New item should match ShoppingItem shape used elsewhere: { id, text, confidence, completed }.[m
+[32m+[m[32m   - On add, update organisedItems state AND call onItemsUpdated(updatedItems) so Home persists to localStorage.[m
+[32m+[m[32m   - Do NOT break existing categorization or tick-off functionality.[m
+[32m+[m
+[32m+[m[32m5) Improve Manual Entry in camera-capture.tsx:[m
+[32m+[m[32m   - Replace the current placeholder “Enter items manuall
