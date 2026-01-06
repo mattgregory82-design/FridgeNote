@@ -105,6 +105,16 @@ The application is designed to be mobile-first with progressive enhancement, sup
 
 ## Recent Changes (6 Jan 2026)
 
+### Guided 3-Step UX Flow
+✓ Converted app into guided flow: Capture → Review → Organised
+✓ Advanced tabs (Price Compare, Find Stores, Order Online) hidden until list confirmed
+✓ Auto-navigation to Review tab after items are captured/entered
+✓ Added "Continue to Organised List" button in Review step
+✓ Added "Add item" input bar at top of Organised View (Enter key support)
+✓ Implemented real manual entry with comma/newline parsing
+✓ Fixed camera lifecycle - stream stops on component unmount
+✓ Install prompt now only shows after user confirms their list
+
 ### PWA Implementation
 ✓ Added Progressive Web App (PWA) support for installable mobile experience
 ✓ Created manifest.json with app metadata, icons, and shortcuts
