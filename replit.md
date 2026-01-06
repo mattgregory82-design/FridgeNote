@@ -103,7 +103,24 @@ The application follows a full-stack TypeScript architecture with a clear separa
 
 The application is designed to be mobile-first with progressive enhancement, supporting both online and offline capabilities through local storage persistence and client-side OCR processing.
 
-## Recent Changes (17 Jan 2025)
+## Recent Changes (6 Jan 2026)
+
+### PWA Implementation
+✓ Added Progressive Web App (PWA) support for installable mobile experience
+✓ Created manifest.json with app metadata, icons, and shortcuts
+✓ Implemented service worker (sw.js) with offline caching strategy
+✓ Added cache-first strategy for static assets, network-first for API calls
+✓ Created install prompt component for mobile users
+✓ Generated custom app icons (192x192 and 512x512 PNG)
+✓ Added PWA meta tags for iOS and Android compatibility
+
+### Bug Fixes
+✓ Fixed Express trust proxy configuration for Replit environment
+✓ Fixed error handler that was causing crashes by rethrowing errors
+✓ Fixed React infinite loop in OrganisedView with fingerprint-based change detection
+✓ Updated Tesseract.js API calls to v5+ syntax
+
+## Previous Changes (17 Jan 2025)
 
 ✓ Updated all UI text to use British English spelling (organised, optimise)
 ✓ Changed currency formatting to use £ (Pound Sterling) symbols
